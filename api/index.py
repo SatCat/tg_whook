@@ -1,48 +1,18 @@
 import os
 from fastapi import FastAPI, Request
-from sys import version as python_formatted_version
 from fastapi.responses import HTMLResponse
-from datetime import datetime, timedelta
-import redis
+import httpx
 
 app = FastAPI()
 
-KV_USERNAME = os.environ.get('KV_USERNAME')
-KV_PASS = os.environ.get('KV_PASS')
-KV_HOST = os.environ.get('KV_HOST')
-KV_PORT = os.environ.get('KV_PORT')
+TARGET_HOST = os.environ.get('TARGET_HOST')
+headers = {'connection': 'keep-alive', 'cache-control': 'max-age=0', 'upgrade-insecure-requests': '1', 
+           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0', 
+           'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'}
 
-r = redis.Redis(
-    host=KV_HOST,
-    port=KV_PORT,
-    username=KV_USERNAME, 
-    password=KV_PASS,
-    ssl=True
-)
-
-@app.get("/")
-async def root():
-    utc = datetime.utcnow()
-    return {"GMT+11 time": format(utc+timedelta(hours=11))}    # make GMT+11
-
-@app.get("/r")   # <host>/r?add=value to add
-async def r_add(request: Request):
-    params = request.query_params
-    pop = None
-    if 'add' in params:
-        r.lpush('list_val', str(params['add']))   # insert at list begin
-        r.ltrim('list_val', 0, 6)                 # save only first 7 elements
-    return {"redis_values": [i.decode("utf-8") for i in r.lrange('list_val',0,10)] }    
-
-
-@app.get("/html", response_class=HTMLResponse)
-async def root():
-    return """
-    <html>
-        <head>
-            <title>Some HTML in here</title>
-        </head>
-        <body>
-            <h1>Look me! HTMLResponse!</h1>
-        </body>
-    </html> """+'@python '+str(python_formatted_version)
+@app.get("/{path:path}")
+async def proxy(request: Request, path: str):
+    url = f"https://{TARGET_HOST}/{path}"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers = headers, params=request.query_params)
+    return HTMLResponse(content=response.text, status_code=response.status_code)
