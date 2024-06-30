@@ -27,11 +27,16 @@ r = redis.Redis(host=KV_HOST, port=KV_PORT, username=KV_USERNAME, password=KV_PA
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    time_str = format(datetime.utcnow()+timedelta(hours=11))+" GMT+11"
+    r.lpush('list_val', time_str+' TG_WebHook_start..')    
+    
     await bot.set_webhook(url="https://tg-whook.vercel.app/webhook",
                           allowed_updates=dp.resolve_used_update_types(),
                           drop_pending_updates=True)
     yield
     await bot.delete_webhook()
+    time_str = format(datetime.utcnow()+timedelta(hours=11))+" GMT+11"
+    r.lpush('list_val', time_str+' TG_WebHook_done!')    
 
 
 app = FastAPI(lifespan=lifespan)
