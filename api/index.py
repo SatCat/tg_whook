@@ -27,7 +27,7 @@ r = redis.Redis(host=KV_HOST, port=KV_PORT, username=KV_USERNAME, password=KV_PA
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await bot.set_webhook(url="<host>/webhook",
+    await bot.set_webhook(url="https://tg-whook.vercel.app/webhook",
                           allowed_updates=dp.resolve_used_update_types(),
                           drop_pending_updates=True)
     yield
