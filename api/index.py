@@ -12,6 +12,8 @@ from fastapi.responses import HTMLResponse
 #import uvicorn
 import redis
 
+print('--print start--')
+
 BOT_TOKEN = os.environ.get('BOT_TOKEN') 
 KV_USERNAME = os.environ.get('KV_USERNAME')
 KV_PASS = os.environ.get('KV_PASS')
