@@ -13,7 +13,7 @@ import uvicorn
 import redis
 
 
-BOT_TOKEN = os.environ.get('BOT_TOKEN')  #727745156:AAHIZ9ui51-VR9Fc-IcNqQue3XJj_GyravY
+BOT_TOKEN = os.environ.get('BOT_TOKEN') 
 KV_USERNAME = os.environ.get('KV_USERNAME')
 KV_PASS = os.environ.get('KV_PASS')
 KV_HOST = os.environ.get('KV_HOST')
