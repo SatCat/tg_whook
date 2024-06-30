@@ -9,7 +9,7 @@ from aiogram.enums import ParseMode
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 #from fastapi.requests import Request
-import uvicorn
+#import uvicorn
 import redis
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN') 
@@ -19,18 +19,16 @@ KV_HOST = os.environ.get('KV_HOST')
 KV_PORT = os.environ.get('KV_PORT')
 APP_HOST = os.environ.get('APP_HOST')
 
-bot = Bot(token=BOT_TOKEN,
-          default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
 r = redis.Redis(host=KV_HOST, port=KV_PORT, username=KV_USERNAME, password=KV_PASS, ssl=True)
-
+add_redis_msg('App start!')
 
 def add_redis_msg(msg):
     time_str = format(datetime.utcnow()+timedelta(hours=11))+" GMT+11 "
     r.lpush('list_val', time_str+msg)    
 
-add_redis_msg('App start!')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
