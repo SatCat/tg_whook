@@ -23,11 +23,11 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTM
 dp = Dispatcher()
 
 r = redis.Redis(host=KV_HOST, port=KV_PORT, username=KV_USERNAME, password=KV_PASS, ssl=True)
-add_redis_msg('App start!')
 
 def add_redis_msg(msg):
     time_str = format(datetime.utcnow()+timedelta(hours=11))+" GMT+11 "
     r.lpush('list_val', time_str+msg)    
+add_redis_msg('App start!')
 
 
 @asynccontextmanager
