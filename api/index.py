@@ -49,6 +49,10 @@ app = FastAPI(lifespan=lifespan)
 async def start(message: Message) -> None:
     await message.answer('Привет!')
 
+@app.on_event("startup")
+async def start_up():
+    print("on_startup")
+    add_redis_msg('on_startup')
 
 @app.post("/webhook")
 async def webhook(request: Request) -> None:
