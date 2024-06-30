@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse
 #import uvicorn
 import redis
 
-print('--print start--')
+print('--App start--')
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN') 
 KV_USERNAME = os.environ.get('KV_USERNAME')
@@ -34,6 +34,7 @@ add_redis_msg('App start!')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print('--lifespan start--')
     add_redis_msg('lifespan_start..')    
     await bot.set_webhook(url=f"https://{APP_HOST}/webhook",
                           allowed_updates=dp.resolve_used_update_types(),
@@ -53,6 +54,7 @@ async def start(message: Message) -> None:
 
 @app.post("/webhook")
 async def webhook(request: Request) -> None:
+    print('--webhook--')
     add_redis_msg('TG Msg')
     update = Update.model_validate(await request.json(), context={"bot": bot})
     await dp.feed_update(bot, update)
