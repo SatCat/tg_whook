@@ -44,15 +44,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
 @dp.message(CommandStart())
 async def start(message: Message) -> None:
     await message.answer('Привет!')
 
-@app.on_event("startup")
-async def start_up():
-    print("on_startup")
-    add_redis_msg('on_startup')
 
 @app.post("/webhook")
 async def webhook(request: Request) -> None:
@@ -61,9 +56,8 @@ async def webhook(request: Request) -> None:
     update = Update.model_validate(await request.json(), context={"bot": bot})
     await dp.feed_update(bot, update)
 
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    return """<html>
-        <head><title>Some HTML in here</title> </head>
-        <body><h3>TG Webhook test app</h3></body>
-    </html> """
+    return """<html><head><title>TG Webhook</title> </head>
+        <body><h3>TG Webhook test app</h3></body></html> """
