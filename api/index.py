@@ -32,13 +32,13 @@ add_redis_msg('App start!')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    add_redis_msg('TG_WebHook_start..')    
+    add_redis_msg('lifespan_start..')    
     await bot.set_webhook(url=f"https://{APP_HOST}/webhook",
                           allowed_updates=dp.resolve_used_update_types(),
                           drop_pending_updates=True)
     yield
     await bot.delete_webhook()
-    add_redis_msg('TG_WebHook_done!')    
+    add_redis_msg('lifespan_done!')    
 
 
 app = FastAPI(lifespan=lifespan)
