@@ -1,18 +1,50 @@
 import os
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+from aiogram.client.default import DefaultBotProperties
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message, Update
+from aiogram.filters import CommandStart
+from aiogram.enums import ParseMode
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
-import httpx
+#from fastapi.requests import Request
+import uvicorn
+import redis
 
-app = FastAPI()
 
-TARGET_HOST = os.environ.get('TARGET_HOST')
-headers = {'connection': 'keep-alive', 'cache-control': 'max-age=0', 'upgrade-insecure-requests': '1', 
-           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0', 
-           'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'}
+BOT_TOKEN = os.environ.get('BOT_TOKEN')  #727745156:AAHIZ9ui51-VR9Fc-IcNqQue3XJj_GyravY
+KV_USERNAME = os.environ.get('KV_USERNAME')
+KV_PASS = os.environ.get('KV_PASS')
+KV_HOST = os.environ.get('KV_HOST')
+KV_PORT = os.environ.get('KV_PORT')
 
-@app.get("/{path:path}")
-async def proxy(request: Request, path: str):
-    url = f"https://{TARGET_HOST}/{path}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers = headers, params=request.query_params)
-    return HTMLResponse(content=response.text, status_code=response.status_code)
+bot = Bot(token=BOT_TOKEN,
+          default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+dp = Dispatcher()
+
+r = redis.Redis(host=KV_HOST, port=KV_PORT, username=KV_USERNAME, password=KV_PASS, ssl=True)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await bot.set_webhook(url="<host>/webhook",
+                          allowed_updates=dp.resolve_used_update_types(),
+                          drop_pending_updates=True)
+    yield
+    await bot.delete_webhook()
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+@dp.message(CommandStart())
+async def start(message: Message) -> None:
+    await message.answer('Привет!')
+
+
+@app.post("/webhook")
+async def webhook(request: Request) -> None:
+    time_str = format(datetime.utcnow()+timedelta(hours=11))+" GMT+11"
+    r.lpush('list_val', time_str+' - TG Msg') 
+    update = Update.model_validate(await request.json(), context={"bot": bot})
+    await dp.feed_update(bot, update)
