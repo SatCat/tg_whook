@@ -59,8 +59,7 @@ async def webhook(request: Request) -> None:
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    return """
-    <html>
+    return """<html>
         <head><title>Some HTML in here</title> </head>
         <body><h3>TG Webhook test app</h3></body>
-    </html> """+'@python '+str(python_formatted_version)
+    </html> """
