@@ -8,8 +8,6 @@ from aiogram.filters import CommandStart
 from aiogram.enums import ParseMode
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
-#from fastapi.requests import Request
-#import uvicorn
 import redis
 
 print('--App start--')
@@ -58,3 +56,11 @@ async def webhook(request: Request) -> None:
     add_redis_msg('TG Msg')
     update = Update.model_validate(await request.json(), context={"bot": bot})
     await dp.feed_update(bot, update)
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    return """
+    <html>
+        <head><title>Some HTML in here</title> </head>
+        <body><h3>TG Webhook test app</h3></body>
+    </html> """+'@python '+str(python_formatted_version)
